@@ -11,11 +11,30 @@ datasource db {
 }
 
 model User {
-  id       Int      @id @default(autoincrement())
-  user     String   @unique
-  password String
-  order    Order[]
-  created  DateTime
+  id          Int           @id @default(autoincrement())
+  user        String        @unique
+  password    String
+  roles       UserRol[]
+  order       Order[]
+  created     DateTime
+  StarProduct StarProduct[]
+}
+
+model Rol {
+  id          Int @id @default(autoincrement())
+  rol         String
+  description String
+  roles       UserRol[]
+}
+
+model UserRol {
+  id     Int
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
+  rol    Rol  @relation(fields: [rolId], references: [id])
+  rolId  Int
+
+  @@id([userId, rolId])
 }
 
 model Category {
@@ -23,34 +42,49 @@ model Category {
   name        String
   description String
   product     Product[]
-  created     DateTime
+  created     DateTime  @default(now())
 }
 
 model Product {
-  id       Int       @id @default(autoincrement())
-  name     String
-  price    Decimal
-  status   Boolean   @default(false)
-  categoryId Int
-  category Category? @relation(fields: [categoryId], references: [id])
-  order ProductsOnOrder[]
-  created  DateTime
+  id          Int               @id @default(autoincrement())
+  name        String
+  price       Decimal
+  isActive    Boolean           @default(false)
+  categoryId  Int
+  category    Category?         @relation(fields: [categoryId], references: [id])
+  order       ProductsOnOrder[]
+  created     DateTime          @default(now())
+  urlImg      String
+  rate        Decimal
+  StarProduct StarProduct[]
 }
 
-model Order{
-  id       Int       @id @default(autoincrement())
-  userId Int
-  user User? @relation(fields: [userId], references: [id])
+model Order {
+  id      Int               @id @default(autoincrement())
+  userId  Int
+  user    User?             @relation(fields: [userId], references: [id])
   product ProductsOnOrder[]
-  created  DateTime
-
+  created DateTime
 }
 
-model ProductsOnOrder{
-  product      Product   @relation(fields: [productId], references: [id])
-  productId     Int 
-  order   Order @relation(fields: [orderId], references: [id])
-  orderId Int
+model ProductsOnOrder {
+  product   Product  @relation(fields: [productId], references: [id])
+  productId Int
+  order     Order    @relation(fields: [orderId], references: [id])
+  orderId   Int
+  created   DateTime
+
   @@id([productId, orderId])
-  created  DateTime
+}
+
+model StarProduct {
+  id        Int
+  count     Int
+  product   Product  @relation(fields: [productId], references: [id])
+  productId Int
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  created   DateTime
+
+  @@id([productId, userId])
 }
