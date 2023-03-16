@@ -16,6 +16,24 @@ export class ProductService {
 
   }
 
+  async getPaginationProducts(params: {
+    skip?: number;
+    take?: number;
+}): Promise<Product[]> {
+    const { skip, take } = params;
+
+    if (isNaN(skip)) {
+        return this.prisma.product.findMany({
+            take
+        });
+    }else{
+        return this.prisma.product.findMany({
+            skip,
+            take
+        });
+    }
+}
+
   async createProduct(data: Product): Promise<Product> {
     return this.prisma.product.create({
       data,

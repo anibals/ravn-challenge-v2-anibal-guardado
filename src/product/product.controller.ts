@@ -1,9 +1,11 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiTags } from '@nestjs/swagger';
 import { Product } from '@prisma/client';
 import { CreateProductDto } from './dto/create-producto-dto';
 import { ProductService } from './product.service';
 
+@ApiTags('products')
 @Controller('product')
 export class ProductController {
 
@@ -12,6 +14,10 @@ export class ProductController {
     @Get()
     findAll() {
         return this.productService.findAll();
+    }
+    @Get("offset")
+    getProductsPagination(@Query('skip') skip: string, @Query('take') take: string): Promise<Product[]>{
+        return this.productService.getPaginationProducts({skip: Number(skip), take: Number(take)});
     }
 
     //get products by category Id
