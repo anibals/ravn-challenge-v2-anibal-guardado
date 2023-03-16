@@ -1,7 +1,9 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags } from '@nestjs/swagger';
 import { Product } from '@prisma/client';
+import { JwtGuard } from 'src/auth/guard/jwt-auth.guard';
 import { CreateProductDto } from './dto/create-producto-dto';
 import { ProductService } from './product.service';
 
@@ -32,13 +34,14 @@ export class ProductController {
         return this.productService.detailProduct(id);
     }
 
+    @UseGuards(JwtGuard)
     @Post()
     async createProduct(@Body() product: Product): Promise<Product> {
         return this.productService.createProduct(product);
     }
 
 
-
+    @UseGuards(JwtGuard)
     @Put(':id')
     updateProduct(@Param('id') id: string, @Body() Product: Product) {
       return this.productService.update(+id, Product);

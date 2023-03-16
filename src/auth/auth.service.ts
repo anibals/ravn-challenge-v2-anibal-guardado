@@ -8,7 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 @Injectable()
 export class AuthService {
   constructor(
-    private  prisma: PrismaService,
+    private prisma: PrismaService,
     private userService: UserService,
     private jwtService: JwtService
   ) { }
@@ -29,9 +29,9 @@ export class AuthService {
       //const hash = await bcrypt.hash(data.password, saltOrRounds);
       //data.password=hash;
       return this.userService.createUser(data);
-    }else
-     throw new UnauthorizedException(`Username already exists: ${user.user}`,);
-      
+    } else
+      throw new UnauthorizedException(`Username already exists: ${user.user}`,);
+
     return user;
   }
 
@@ -39,31 +39,43 @@ export class AuthService {
     let user: User;
 
     try {
-      user = await this.prisma.user.findUnique({ where: { user: email } });
+      user = await this.prisma.user.findUnique({
+        where: { user: email },
+        include: { 
+          roles: { 
+            include:{ 
+              rol: {
+                 select: { 
+                  rol: true } 
+                } }
+               } 
+              }
+      });
     } catch (err) {
       throw new UnauthorizedException(
         `There isn't any user with email: ${email}`,
       );
     }
-    if(user){
-    if (!(await this.checkPassword(password, user))) {
+    if (user) {
+      if (!(await this.checkPassword(password, user))) {
+        throw new UnauthorizedException(
+          `Wrong password for user with email: ${email}`,
+        );
+      }
+    } else
       throw new UnauthorizedException(
-        `Wrong password for user with email: ${email}`,
+        `User not exists: ${email}`,
       );
-    }}else
-    throw new UnauthorizedException(
-      `User not exists: ${email}`,
-    );
-    const token =await this.loginToken(user);
-     const data={
-      user:user,
+    const token = await this.loginToken(user);
+    const data = {
+      user: user,
       token
-     }
+    }
     return data;
   }
 
   async checkPassword(plainPassword: string, user: User): Promise<boolean> {
-    return plainPassword==user.password;
+    return plainPassword == user.password;
     //return await bcrypt.compare(plainPassword, user.password);
   }
 
@@ -73,6 +85,6 @@ export class AuthService {
       access_token: this.jwtService.sign(payload),
     };
   }
-  
+
 
 }
