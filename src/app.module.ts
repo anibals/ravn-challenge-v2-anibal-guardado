@@ -16,9 +16,14 @@ import { OrderModule } from './order/order.module';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { MailModule } from './mail/mail.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [ProductModule, PrismaModule, CategoryModule, OrderModule, UserModule, AuthModule, ScheduleModule.forRoot()],
+  imports: [ProductModule, PrismaModule, CategoryModule, OrderModule, UserModule, AuthModule, ScheduleModule.forRoot(), MailModule,
+    ConfigModule.forRoot({
+      isGlobal: true, // no need to import into other modules
+    })],
   controllers: [AppController, CategoryController, UserController, ProductController, OrderController ],
   providers: [AppService, ProductService, CategoryService, OrderService, UserService],
 })

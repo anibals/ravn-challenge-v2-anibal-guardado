@@ -1,13 +1,14 @@
+import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable, Get, Logger, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Cron } from '@nestjs/schedule';
 import { Prisma, Product } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateProductDto } from './dto/create-producto-dto';
 
 @Injectable()
 export class ProductService {
   private readonly logger = new Logger(ProductService.name);
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService,private mailService:MailerService) { }
 
   async findAll() {
     const results = await this.prisma.product.findMany({
@@ -88,9 +89,19 @@ export class ProductService {
       message: 'This product is now disabled',
     };
   }
-  @Cron('59 * * * * *')
-  verifyStock() {
+  //@Cron('59 * * * * *')
+  async verifyStock(config: ConfigService) {
     this.logger.debug('Checking stock of a product');
-    this.logger.debug('Sending an email to user');
+    const url = `shopplitte.com/auth/confirm?token=`;
+    await this.mailService.sendMail({
+      to: config.get('MAIL_TO'),
+      // from: '"Support Team" <support@example.com>', // override default from
+      subject: 'Welcome to Nice App! Confirm your Email',
+      template: './confirmation', // `.hbs` extension is appended automatically
+      context: { // ✏️ filling curly brackets with content
+        name: "Anibal SIbrian",
+        url,
+      },
+    });
   }
 }
